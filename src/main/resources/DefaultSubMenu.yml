@@ -1,0 +1,25 @@
+title: "Example title"
+size: 27
+Items:
+  1:
+    material: DIAMOND
+    display-name: "Example display name"
+    lore:
+      - "Example lore 1"
+      - "Example lore 2 and price placeholder: &c%price%"
+    amount: 1
+    permissions:
+      message:
+        perm: essentials.msg
+        contexts:
+          server:
+            - Survival
+          world:
+            - Spawn
+            - world
+      global:
+        perm: essentials.home
+    must-have-perms:
+      "gamemode": essentials.gamemode
+    price: 10
+    slot: 0

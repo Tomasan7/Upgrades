@@ -1,0 +1,26 @@
+enchant-on-have: true
+color-on-have: true
+
+have-color: "&2&l"
+not-have-color: "&c&l"
+
+MainMenu:
+  title: "Example title (main menu)"
+  size: 27
+  Items:
+    1:
+      material: CHEST
+      display-name: "Example display name (main menu)"
+      lore:
+        - "Example lore 1 (main menu)"
+        - "Example lore 2 (main menu)"
+      amount: 1
+      slot: 0
+      sub-menu: ExampleMenu
+
+Messages:
+  plugin-prefix: "&b&l[&3&lUpgrades&b&l] &r"
+  successful-buy: "&2Successful buy."
+  already-have: "&cYou already have this one."
+  no-money: "&cYou don't have enough money to buy this."
+  dont-have-must-have-perm: "&cYou dont have must have permission: &l"
