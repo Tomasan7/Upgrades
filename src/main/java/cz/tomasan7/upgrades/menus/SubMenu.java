@@ -75,7 +75,7 @@ public class SubMenu {
             try
             {
                 file = new File(plugin.getDataFolder().getPath() + "/SubMenus", name + ".yml");
-                InputStream link = (getClass().getResourceAsStream("/DefaultSubMenu.yml"));
+                InputStream link = (getClass().getResourceAsStream("/defaultSubMenu.yml"));
                 Files.copy(link, file.getAbsoluteFile().toPath());
                 file.createNewFile();
             } catch (IOException e) {}

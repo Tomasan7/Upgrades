@@ -30,7 +30,7 @@ public class MainMenu {
         return inventory;
     }
 
-    public static void Load ()
+    public static void load ()
     {
         FileConfiguration config = Main.getPlugin(Main.class).getConfig();
         ArrayList<MainMenuElement> elements = new ArrayList<>();

@@ -45,7 +45,7 @@ public class Reload extends SubCommand {
             plugin.saveDefaultConfig();
 
         plugin.reloadConfig();
-        MainMenu.Load();
+        MainMenu.load();
 
         sender.sendMessage("§2Configuration reloaded.");
     }

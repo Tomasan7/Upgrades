@@ -1,6 +1,7 @@
 package cz.tomasan7.upgrades.other;
 
 import cz.tomasan7.upgrades.Main;
+import cz.tomasan7.upgrades.Upgrades;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.cacheddata.CachedPermissionData;
@@ -15,7 +16,7 @@ public class PermissionManager {
 
     public static boolean checkPermission (Player player, PermissionNode permissionNode, boolean contextual)
     {
-        LuckPerms luckPerms = Main.getLuckPerms();
+        LuckPerms luckPerms = Upgrades.getLuckPerms();
         User user = luckPerms.getUserManager().getUser(player.getName());
 
         ImmutableContextSet contexts = permissionNode.getContexts();
@@ -26,7 +27,7 @@ public class PermissionManager {
 
     public static void addPermission (Player player, PermissionNode permissionNode)
     {
-        LuckPerms luckPerms = Main.getLuckPerms();
+        LuckPerms luckPerms = Upgrades.getLuckPerms();
         User user = LuckPermsProvider.get().getUserManager().getUser(player.getUniqueId());
         user.data().add(permissionNode);
         luckPerms.getUserManager().saveUser(user);

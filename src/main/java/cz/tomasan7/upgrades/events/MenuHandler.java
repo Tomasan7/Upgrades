@@ -1,6 +1,7 @@
 package cz.tomasan7.upgrades.events;
 
 import cz.tomasan7.upgrades.Main;
+import cz.tomasan7.upgrades.Upgrades;
 import cz.tomasan7.upgrades.menus.MainMenu;
 import cz.tomasan7.upgrades.menus.MainMenuElement;
 import cz.tomasan7.upgrades.menus.SubMenu;
@@ -85,7 +86,7 @@ public class MenuHandler implements Listener {
 
     private void SubMenu_menu(Player player, ItemStack clickedItem, SubMenu subMenu)
     {
-        Economy economy = Main.getEconomy();
+        Economy economy = Upgrades.getEconomy();
 
         for (SubMenuElement element : subMenu.getElements(player))
         {
