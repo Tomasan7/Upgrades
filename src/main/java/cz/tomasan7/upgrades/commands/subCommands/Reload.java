@@ -1,52 +1,48 @@
 package cz.tomasan7.upgrades.commands.subCommands;
 
-import cz.tomasan7.upgrades.Main;
-import cz.tomasan7.upgrades.commands.SubCommand;
-import cz.tomasan7.upgrades.menus.MainMenu;
+import cz.tomasan7.CommandManager.SubCommand;
+import cz.tomasan7.upgrades.Upgrades;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 
-import java.io.File;
+import java.util.List;
 
-public class Reload extends SubCommand {
+public class Reload implements SubCommand
+{
+	@Override
+	public String getName ()
+	{
+		return "reload";
+	}
 
-    @Override
-    public String getName ()
-    {
-        return "reload";
-    }
+	@Override
+	public String getDescription ()
+	{
+		return "Reloads plugin's configuration file.";
+	}
 
-    @Override
-    public String getDescription ()
-    {
-        return "Reloads plugin's configuration file.";
-    }
+	@Override
+	public String getSyntax ()
+	{
+		return "/upgrades reload";
+	}
 
-    @Override
-    public String getSyntax ()
-    {
-        return "/voidtp reload";
-    }
+	@Override
+	public String getPermission ()
+	{
+		return "upgrades.reload";
+	}
 
-    @Override
-    public String getPermission ()
-    {
-        return "upgrades.reload";
-    }
+	@Override
+	public List<String> getTabCompletions (int i, String[] strings)
+	{
+		return null;
+	}
 
-    @Override
-    public void perform (CommandSender sender, String[] args)
-    {
-        Plugin plugin = Main.getPlugin(Main.class);
+	@Override
+	public void perform (CommandSender sender, String[] args)
+	{
+		Upgrades.reload();
 
-        if (new File(plugin.getDataFolder(), "config.yml").exists())
-            plugin.reloadConfig();
-        else
-            plugin.saveDefaultConfig();
-
-        plugin.reloadConfig();
-        MainMenu.load();
-
-        sender.sendMessage("§2Configuration reloaded.");
-    }
+		sender.sendMessage("§2Configuration reloaded.");
+	}
 }

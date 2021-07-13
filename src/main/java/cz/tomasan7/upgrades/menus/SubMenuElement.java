@@ -3,6 +3,10 @@ package cz.tomasan7.upgrades.menus;
 import cz.tomasan7.upgrades.other.Config;
 import cz.tomasan7.upgrades.other.PermissionManager;
 import cz.tomasan7.upgrades.other.Utils;
+import net.luckperms.api.context.ContextSet;
+import net.luckperms.api.context.ContextSetFactory;
+import net.luckperms.api.context.ImmutableContextSet;
+import net.luckperms.api.context.MutableContextSet;
 import net.luckperms.api.node.types.PermissionNode;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -97,45 +101,14 @@ public class SubMenuElement
 		return itemStack;
 	}
 
-	/*private Set<PermissionNode> getPermissions ()
+	private static PermissionNode createPermissionNode (ConfigurationSection permSection)
 	{
-		PermissionNode[] permissions;
-		String[] permissionElements = Utils.fromSetToArray(config.getConfigurationSection(path + ".permissions").getKeys(false));
+		String permission = permSection.getString("perm");
 
-		permissions = new PermissionNode[permissionElements.length];
+		Map<String, ?> contexts = permSection.getValues(false);
+		contexts.remove("perm");
 
-		for (int i = 0; i < permissionElements.length; i++)
-		{
-			String permission = config.getString(path + ".permissions." + permissionElements[i] + ".perm");
-			String[] worlds = new String[0];
-
-			if (config.getConfigurationSection(path + ".permissions." + permissionElements[i]).contains("world"))
-			{
-				worlds = new String[config.getStringList(path + ".permissions." + permissionElements[i] + ".world").size()];
-				config.getStringList(path + ".permissions." + permissionElements[i] + ".world").toArray(worlds);
-			}
-
-			String[] servers = new String[0];
-
-			if (config.getConfigurationSection(path + ".permissions." + permissionElements[i]).contains("server"))
-			{
-				servers = new String[config.getStringList(path + ".permissions." + permissionElements[i] + ".server").size()];
-				config.getStringList(path + ".permissions." + permissionElements[i] + ".server").toArray(servers);
-			}
-
-			permissions[i] = PermissionManager.createPermissionNode(permission, worlds, servers);
-		}
-
-		return permissions;
-	}*/
-
-	private static PermissionNode createPermissionNode (ConfigurationSection permissionSection)
-	{
-		String permission = permissionSection.getString("perm");
-		//List<String> servers = permissionSection.getStringList("servers");
-		Set<String> worlds = new HashSet<>(permissionSection.getStringList("worlds"));
-
-		return PermissionManager.createPermissionNode(permission, worlds, null);
+		return PermissionManager.createPermissionNode(permission, PermissionManager.contextsFromConfig(contexts), true);
 	}
 
 	private HashMap<String, String> setupMustHavePerms ()

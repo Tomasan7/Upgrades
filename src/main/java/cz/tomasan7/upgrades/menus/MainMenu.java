@@ -1,6 +1,6 @@
 package cz.tomasan7.upgrades.menus;
 
-import cz.tomasan7.upgrades.Constants;
+import cz.tomasan7.upgrades.other.Constants;
 import cz.tomasan7.upgrades.other.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -34,6 +34,11 @@ public class MainMenu implements InventoryHolder
 			elements.add(element);
 			inventory.setItem(element.getSlot(), element.getItemStack());
 		}
+	}
+
+	public Set<MainMenuElement> getElements ()
+	{
+		return new HashSet<>(elements);
 	}
 
 	@NotNull

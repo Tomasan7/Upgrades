@@ -101,5 +101,10 @@
             <version>RELEASE</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>cz.Tomasan7</groupId>
+            <artifactId>CommandManager</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 </project>

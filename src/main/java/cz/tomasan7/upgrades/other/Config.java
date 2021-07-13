@@ -1,35 +1,35 @@
 package cz.tomasan7.upgrades.other;
 
 import cz.tomasan7.upgrades.Main;
+import net.luckperms.api.context.ContextSet;
 import org.bukkit.configuration.file.FileConfiguration;
 
-public class Config {
+import java.util.Map;
 
-    public static Boolean getEnchantOnHave()
+public class Config
+{
+    public static ContextSet getDefaultContexts ()
     {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
-
-        return config.getBoolean("enchant-on-have");
+        return PermissionManager.contextsFromConfig(Main.getInstance().getConfig().getConfigurationSection("default-contexts").getValues(false));
     }
 
-    public static Boolean getColorOnHave()
-    {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
+	public static Boolean getEnchantOnHave ()
+	{
+		return Main.getInstance().getConfig().getBoolean("enchant-on-have");
+	}
 
-        return config.getBoolean("color-on-have");
-    }
+	public static Boolean getColorOnHave ()
+	{
+		return Main.getInstance().getConfig().getBoolean("color-on-have");
+	}
 
-    public static String getHaveColor()
-    {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
+	public static String getHaveColor ()
+	{
+		return Utils.formatText(Main.getInstance().getConfig().getString("have-color"));
+	}
 
-        return Utils.formatText(config.getString("have-color"));
-    }
-
-    public static String getNotHaveColor()
-    {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
-
-        return Utils.formatText(config.getString("not-have-color"));
-    }
+	public static String getNotHaveColor ()
+	{
+		return Utils.formatText(Main.getInstance().getConfig().getString("not-have-color"));
+	}
 }

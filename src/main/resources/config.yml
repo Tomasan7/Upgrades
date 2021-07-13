@@ -1,3 +1,7 @@
+# These contexts will be applied to every buyable permission.
+defaul-contexts:
+  server: Survival
+
 enchant-on-have: true
 color-on-have: true
 
@@ -20,6 +24,7 @@ MainMenu:
 
 Messages:
   plugin-prefix: "&b&l[&3&lUpgrades&b&l] &r"
+  no-permission: "&cYou don't have permission to do that."
   successful-buy: "&2Successful buy."
   already-have: "&cYou already have this one."
   no-money: "&cYou don't have enough money to buy this."

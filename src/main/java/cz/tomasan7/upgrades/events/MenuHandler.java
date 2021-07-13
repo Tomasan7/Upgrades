@@ -1,20 +1,13 @@
 package cz.tomasan7.upgrades.events;
 
-import cz.tomasan7.upgrades.Main;
 import cz.tomasan7.upgrades.Upgrades;
 import cz.tomasan7.upgrades.menus.MainMenu;
-import cz.tomasan7.upgrades.menus.MainMenuElement;
 import cz.tomasan7.upgrades.menus.SubMenu;
 import cz.tomasan7.upgrades.menus.SubMenuElement;
-import cz.tomasan7.upgrades.other.Messages;
-import cz.tomasan7.upgrades.other.PermissionManager;
-import cz.tomasan7.upgrades.other.Utils;
-import net.luckperms.api.node.types.PermissionNode;
+import cz.tomasan7.upgrades.other.*;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,147 +18,91 @@ import org.bukkit.inventory.ItemStack;
 
 public class MenuHandler implements Listener
 {
-	private static FileConfiguration config;
-
 	@EventHandler
 	public void onItemClick (InventoryClickEvent event)
 	{
-	    ItemStack clickedItem = event.getCurrentItem();
+		ItemStack clickedItem = event.getCurrentItem();
 
-        if (clickedItem == null || clickedItem.getType() == Material.AIR)
-            return;
+		if (clickedItem == null || clickedItem.getType() == Material.AIR)
+			return;
 
-        Inventory clickedInventory = event.getClickedInventory();
+		Inventory clickedInventory = event.getClickedInventory();
 
-        if (clickedInventory == null || clickedInventory.getHolder() == null)
-            return;
+		if (clickedInventory == null || clickedInventory.getHolder() == null)
+			return;
 
-        InventoryHolder holder = clickedInventory.getHolder();
+		InventoryHolder holder = clickedInventory.getHolder();
 
-        if (holder instanceof MainMenu menu)
-        {
-            MainMenu_menu((Player) event.getWhoClicked(), clickedItem, menu);
-            event.setCancelled(true);
-        }
-        else if (holder instanceof SubMenu menu)
-        {
-            SubMenu_menu((Player) event.getWhoClicked(), clickedItem, menu);
-            event.setCancelled(true);
-        }
-
-		/*if (event.getCurrentItem() != null)     // Check if player is holding something.
+		if (holder instanceof MainMenu menu)
 		{
-			config = Main.getPlugin(Main.class).getConfig();
-			Player player = (Player) event.getWhoClicked();
-			String title = event.getView().getTitle();
-			ItemStack clickedItem = event.getCurrentItem();
-			boolean isMenu = false;
-
-			if (title.equals(Utils.formatText(config.getString("MainMenu.title"))))
-			{
-				isMenu = true;
-				MainMenu_menu(player, clickedItem);
-			}
-			else
-			{
-				for (SubMenu subMenu : MainMenu.subMenus)
-				{
-					if (Utils.formatText(subMenu.getConfig().getString("title")).equals(title))
-					{
-						isMenu = true;
-						SubMenu_menu(player, clickedItem, subMenu);
-						break;
-					}
-				}
-			}
-
-			if (isMenu)
-			{
-				event.setCancelled(true);
-			}
-		}*/
+			mainMenu((Player) event.getWhoClicked(), clickedItem, menu);
+			event.setCancelled(true);
+		}
+		else if (holder instanceof SubMenu menu)
+		{
+			subMenu((Player) event.getWhoClicked(), clickedItem, menu);
+			event.setCancelled(true);
+		}
 	}
 
-	private void MainMenu_menu (Player player, ItemStack clickedItem, MainMenu menu)
+	private void mainMenu (Player player, ItemStack clickedItem, MainMenu menu)
 	{
-		String subMenuName = "";
-
-		for (MainMenuElement element : MainMenu.elements)
+		menu.getElements().stream()
+				.filter(element -> element.getItemStack().equals(clickedItem))
+				.findAny().ifPresent((element) ->
 		{
-			if (element.item.equals(clickedItem))
-			{
-				player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.25F, 1F);
-				subMenuName = element.subMenu;
-				break;
-			}
-		}
-
-		for (SubMenu subMenu : MainMenu.subMenus)
-		{
-			if (subMenu.name.equals(subMenuName))
-			{
-				player.openInventory(subMenu.getInventory(player));
-				break;
-			}
-		}
+			Constants.CLICK_SOUND.play(player);
+			player.openInventory(SubMenu.newSubMenu(element.getSubMenu(), player).getInventory());
+		});
 	}
 
-	private void SubMenu_menu (Player player, ItemStack clickedItem, SubMenu subMenu)
+	private void subMenu (Player player, ItemStack clickedItem, SubMenu subMenu)
 	{
 		Economy economy = Upgrades.getEconomy();
 
-		for (SubMenuElement element : subMenu.getElements(player))
+		SubMenuElement clickedElement = subMenu.getElements().stream()
+				.filter(element -> element.getItemStack().equals(clickedItem))
+				.findAny().orElse(null);
+
+		if (clickedElement == null)
+			return;
+
+		Constants.CLICK_SOUND.play(player);
+
+		if (clickedElement.getPermissions().stream().allMatch(perm -> PermissionManager.checkPermission(player, perm, true)))
 		{
-			if (!element.itemStack.equals(clickedItem))
-				continue;
+			Messages.Message(player, Messages.getAlreadyHave());
+			player.closeInventory();
+			return;
+		}
 
-			player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.25F, 1F);
-
-			boolean doesntHaveAll = false;
-
-			for (PermissionNode permissionNode : element.permissions)
+		/* If player misses at least one mustHavePermission, then interrupt. */
+		for (String key : clickedElement.getMustHavePerms().keySet())
+		{
+			if (!PermissionManager.checkPermission(player, PermissionManager.createPermissionNode(clickedElement.getMustHavePerms().get(key), Config.getDefaultContexts(), false), false))
 			{
-				if (!PermissionManager.checkPermission(player, permissionNode, true))
-					doesntHaveAll = true;
-			}
-
-			if (!doesntHaveAll)
-			{
-				Messages.Message(player, Messages.getAlreadyHave());
+				Messages.Message(player, Messages.getDontHaveMustHavePerm() + Utils.formatText(key));
 				player.closeInventory();
 				return;
 			}
+		}
 
-			for (String key : element.mustHavePerms.keySet())
-			{
-				if (!PermissionManager.checkPermission(player, PermissionManager.createPermissionNode(element.mustHavePerms.get(key), null, null), false))
-				{
-					Messages.Message(player, Messages.getDontHaveMustHavePerm() + Utils.formatText(key));
-					player.closeInventory();
-					return;
-				}
-			}
+		EconomyResponse response = economy.withdrawPlayer(player, clickedElement.getPrice());
 
-			EconomyResponse response = economy.withdrawPlayer(player, element.price);
-
-			if (response.transactionSuccess())
-			{
-				for (PermissionNode permissionNode : element.permissions)
-				{
-					PermissionManager.addPermission(player, permissionNode);
-				}
-				player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 75, 1);
-				Messages.Message(player, Messages.getSuccessfulBuy());
-				player.openInventory(subMenu.getInventory(player));
-			}
+		if (response.transactionSuccess())
+		{
+			clickedElement.getPermissions().forEach(perm -> PermissionManager.addPermission(player, perm));
+			Constants.BUY_SUCCESS_SOUND.play(player);
+			Messages.Message(player, Messages.getSuccessfulBuy());
+			player.openInventory(SubMenu.newSubMenu(subMenu.getName(), player).getInventory());
+		}
+		else
+		{
+			if (response.errorMessage.equals("Loan was not permitted"))
+				Messages.Message(player, Messages.getNoMoney());
 			else
-			{
-				if (response.errorMessage.equals("Loan was not permitted"))
-					Messages.Message(player, Messages.getNoMoney());
-				else
-					Messages.Message(player, response.errorMessage);
-				player.closeInventory();
-			}
+				Messages.Message(player, response.errorMessage);
+			player.closeInventory();
 		}
 	}
 }

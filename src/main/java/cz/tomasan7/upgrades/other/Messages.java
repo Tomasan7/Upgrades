@@ -13,36 +13,31 @@ public class Messages {
 
     public static String getPrefix()
     {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
+        return Utils.formatText(Main.getInstance().getConfig().getString("messages.plugin-prefix"));
+    }
 
-        return Utils.formatText(config.getString("Messages.plugin-prefix"));
+    public static String getNoPermission ()
+    {
+        return Utils.formatText(Main.getInstance().getConfig().getString("messages.no-permission"));
     }
 
     public static String getSuccessfulBuy()
     {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
-
-        return Utils.formatText(config.getString("Messages.successful-buy"));
+        return Utils.formatText(Main.getInstance().getConfig().getString("messages.successful-buy"));
     }
 
     public static String getAlreadyHave()
     {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
-
-        return Utils.formatText(config.getString("Messages.already-have"));
+        return Utils.formatText(Main.getInstance().getConfig().getString("messages.already-have"));
     }
 
     public static String getNoMoney()
     {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
-
-        return Utils.formatText(config.getString("Messages.no-money"));
+        return Utils.formatText(Main.getInstance().getConfig().getString("messages.no-money"));
     }
 
     public static String getDontHaveMustHavePerm()
     {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
-
-        return Utils.formatText(config.getString("Messages.dont-have-must-have-perm"));
+        return Utils.formatText(Main.getInstance().getConfig().getString("messages.dont-have-must-have-perm"));
     }
 }

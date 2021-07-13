@@ -1,6 +1,6 @@
 package cz.tomasan7.upgrades;
 
-import cz.tomasan7.upgrades.commands.SubCommandsManager;
+import cz.tomasan7.upgrades.commands.UpgradesCmd;
 import cz.tomasan7.upgrades.events.MenuHandler;
 import cz.tomasan7.upgrades.menus.MainMenu;
 import net.luckperms.api.LuckPerms;
@@ -34,7 +34,14 @@ public class Upgrades
 		main.saveDefaultConfig();
 		main.getConfig().options().copyDefaults(true);
 
-		MainMenu.load();
+		mainMenu = new MainMenu(main.getConfig().getConfigurationSection("MainMenu"));
+	}
+
+	public static void reload ()
+	{
+		main.saveDefaultConfig();
+		main.reloadConfig();
+		mainMenu = new MainMenu(main.getConfig().getConfigurationSection("MainMenu"));
 	}
 
 	/**
@@ -50,10 +57,7 @@ public class Upgrades
 	 */
 	private static void registerCommands ()
 	{
-		PluginCommand upgradesCmd = main.getCommand("upgrades");
-
-		upgradesCmd.setExecutor(new SubCommandsManager());
-		upgradesCmd.setTabCompleter(new SubCommandsManager());
+		new UpgradesCmd().registerMainCommand(Main.getInstance(), "upgrades");
 	}
 
 	/**
