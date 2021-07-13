@@ -1,6 +1,6 @@
 title: "Example title"
-size: 27
-Items:
+rows: 3
+items:
   1:
     material: DIAMOND
     display-name: "Example display name"

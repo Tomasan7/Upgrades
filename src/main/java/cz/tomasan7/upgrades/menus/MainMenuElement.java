@@ -2,42 +2,49 @@ package cz.tomasan7.upgrades.menus;
 
 import cz.tomasan7.upgrades.other.Utils;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class MainMenuElement {
+public class MainMenuElement
+{
+	private final ItemStack item;
+	private final int slot;
+	private final String subMenu;
 
-    public ItemStack item;
-    public int slot;
-    public String subMenu;
+	public MainMenuElement (ConfigurationSection config)
+	{
+		Material material = Material.matchMaterial(config.getString("material"));
+		String displayName = Utils.formatText(config.getString("display-name"));
+		List<String> lore = config.getStringList("lore").stream().map(Utils::formatText).toList();
+		int amount = config.getInt("amount");
+		slot = config.getInt("slot");
+		subMenu = config.getString("sub-menu");
 
-    public MainMenuElement (FileConfiguration config, String path)
-    {
-        String material = Utils.formatText(config.getString(path + "material"));                    //    Material
-        String displayName = Utils.formatText(config.getString(path + "display-name"));             //    DisplayName
-        List<String> lore = new ArrayList<>();                                                            //    --------------
-        for (String eachLore : config.getStringList(path + "lore"))                                 //
-        {                                                                                                 //        Lore
-            lore.add(Utils.formatText(eachLore));                                                         //
-        }                                                                                                 //    --------------
-        int amount = config.getInt(path + "amount");                                                //    Amount
-        this.slot = config.getInt(path + "slot");                                                   //    Slot
-        this.subMenu = config.getString(path + "sub-menu");                                         //    SubMenu
+		ItemStack item = new ItemStack(material, amount);
+		ItemMeta itemMeta = item.getItemMeta();
+		itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		itemMeta.setDisplayName(displayName);
+		itemMeta.setLore(lore);
+		item.setItemMeta(itemMeta);
+		this.item = item;
+	}
 
-        ItemStack item = new ItemStack(Material.getMaterial(material), amount);
-        ItemMeta itemMeta = item.getItemMeta();
+	public ItemStack getItemStack ()
+	{
+		return item.clone();
+	}
 
-        itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+	public int getSlot ()
+	{
+		return slot;
+	}
 
-        itemMeta.setDisplayName(displayName);
-        itemMeta.setLore(lore);
-
-        item.setItemMeta(itemMeta);
-        this.item = item;
-    }
+	public String getSubMenu ()
+	{
+		return subMenu;
+	}
 }

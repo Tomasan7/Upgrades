@@ -4,8 +4,9 @@ import cz.tomasan7.upgrades.other.Config;
 import cz.tomasan7.upgrades.other.PermissionManager;
 import cz.tomasan7.upgrades.other.Utils;
 import net.luckperms.api.node.types.PermissionNode;
-import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -13,166 +14,177 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-public class SubMenuElement {
+public class SubMenuElement
+{
+	private final ItemStack itemStack;
+	private final Set<PermissionNode> permissions;
+	private final Map<String, String> mustHavePerms;
+	private final int slot;
+	private final double price;
+	private final ConfigurationSection config;
 
-    public ItemStack itemStack;
-    public PermissionNode[] permissions;
-    public HashMap<String, String> mustHavePerms = new HashMap<>();
-    public int slot;
-    public double price;
+	private final Player player;
 
-    private FileConfiguration config;
-    private String path;
-    private Player player;
+	public SubMenuElement (ConfigurationSection config, Player player)
+	{
+		this.config = config;
+		this.player = player;
+		permissions = new HashSet<>();
 
-    public SubMenuElement (FileConfiguration config, String path, Player player)
-    {
-        this.config = config;
-        this.path = path;
-        this.player = player;
+		ConfigurationSection permsSection = config.getConfigurationSection("permissions");
 
-        this.permissions = getPermissions();
-        this.price = getPrice();
-        this.itemStack = getItemStack();
-        this.mustHavePerms = getMustHavePerms();
-        this.slot = getSlot();
-    }
+		for (String permKey : permsSection.getKeys(false))
+			permissions.add(createPermissionNode(permsSection.getConfigurationSection(permKey)));
 
-    private ItemStack getItemStack ()
-    {
-        ItemStack itemStack = new ItemStack(getMaterial(), getAmount());
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        String displayName = getDisplayName();
+		price = config.getDouble("price");
+		mustHavePerms = setupMustHavePerms();
+		slot = config.getInt("slot");
 
-        boolean hasAllPerms = true;
+		itemStack = createItemStack();
+	}
 
-        for (PermissionNode permissionNode : this.permissions)
-        {
-            if (!PermissionManager.checkPermission(player, permissionNode, true))
-            {
-                hasAllPerms = false;
-                break;
-            }
-        }
+	private ItemStack createItemStack ()
+	{
+		Material material = Material.matchMaterial(config.getString("material"));
+		int amount = config.getInt("amount");
 
-        if (hasAllPerms)
-        {
-            if (Config.getEnchantOnHave())
-            {
-                itemMeta.addEnchant(Enchantment.DURABILITY, 1, false);
-            }
+		ItemStack itemStack = new ItemStack(material, amount);
+		ItemMeta itemMeta = itemStack.getItemMeta();
+		String displayName = Utils.formatText(config.getString("display-name"));
 
-            if (Config.getColorOnHave())
-            {
-                displayName = Utils.removeColors("§", displayName);
-                displayName = Config.getHaveColor() + displayName;
-            }
-        }
-        else
-        {
-            if (Config.getColorOnHave())
-            {
-                displayName = Utils.removeColors("§", displayName);
-                displayName = Config.getNotHaveColor() + displayName;
-            }
-        }
+		boolean hasAllPerms = true;
 
-        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		for (PermissionNode permissionNode : this.permissions)
+		{
+			if (!PermissionManager.checkPermission(player, permissionNode, true))
+			{
+				hasAllPerms = false;
+				break;
+			}
+		}
 
-        itemMeta.setDisplayName(displayName);
-        itemMeta.setLore(getLore());
+		if (hasAllPerms)
+		{
+			if (Config.getEnchantOnHave())
+				itemMeta.addEnchant(Enchantment.DURABILITY, 1, false);
 
-        itemStack.setItemMeta(itemMeta);
+			if (Config.getColorOnHave())
+			{
+				displayName = ChatColor.stripColor(displayName);
+				displayName = Config.getHaveColor() + displayName;
+			}
+		}
+		else
+		{
+			if (Config.getColorOnHave())
+			{
+				displayName = ChatColor.stripColor(displayName);
+				displayName = Config.getNotHaveColor() + displayName;
+			}
+		}
 
-        return itemStack;
-    }
+		itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+		itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		itemMeta.setDisplayName(displayName);
+		List<String> lore = config.getStringList("lore").stream()
+				.map(s -> Utils.formatText(s, "%price%", price))
+				.toList();
+		itemMeta.setLore(lore);
+		itemStack.setItemMeta(itemMeta);
 
-    private Material getMaterial ()
-    {
-        return Material.getMaterial(config.getString(path + ".material"));
-    }
+		return itemStack;
+	}
 
-    private String getDisplayName ()
-    {
-        return Utils.formatText(config.getString(path + ".display-name"));
-    }
+	/*private Set<PermissionNode> getPermissions ()
+	{
+		PermissionNode[] permissions;
+		String[] permissionElements = Utils.fromSetToArray(config.getConfigurationSection(path + ".permissions").getKeys(false));
 
-    private List<String> getLore ()
-    {
-        List<String> lore = new ArrayList<>();
+		permissions = new PermissionNode[permissionElements.length];
 
-        for (String eachLore : config.getStringList(path + ".lore"))
-        {
-            lore.add(Utils.formatText(eachLore, "%price%", this.price));
-        }
+		for (int i = 0; i < permissionElements.length; i++)
+		{
+			String permission = config.getString(path + ".permissions." + permissionElements[i] + ".perm");
+			String[] worlds = new String[0];
 
-        return lore;
-    }
+			if (config.getConfigurationSection(path + ".permissions." + permissionElements[i]).contains("world"))
+			{
+				worlds = new String[config.getStringList(path + ".permissions." + permissionElements[i] + ".world").size()];
+				config.getStringList(path + ".permissions." + permissionElements[i] + ".world").toArray(worlds);
+			}
 
-    private int getAmount ()
-    {
-        return config.getInt(path + ".amount");
-    }
+			String[] servers = new String[0];
 
-    private PermissionNode[] getPermissions ()
-    {
-        PermissionNode[] permissions;
-        String[] permissionElements = Utils.fromSetToArray(config.getConfigurationSection(path + ".permissions").getKeys(false));
+			if (config.getConfigurationSection(path + ".permissions." + permissionElements[i]).contains("server"))
+			{
+				servers = new String[config.getStringList(path + ".permissions." + permissionElements[i] + ".server").size()];
+				config.getStringList(path + ".permissions." + permissionElements[i] + ".server").toArray(servers);
+			}
 
-        permissions = new PermissionNode[permissionElements.length];
+			permissions[i] = PermissionManager.createPermissionNode(permission, worlds, servers);
+		}
 
-        for (int i = 0; i < permissionElements.length; i++)
-        {
-            String permission = config.getString(path + ".permissions." + permissionElements[i] + ".perm");
-            String[] worlds = new String[0];
+		return permissions;
+	}*/
 
-            if (config.getConfigurationSection(path + ".permissions." + permissionElements[i]).contains("world"))
-            {
-                worlds = new String[config.getStringList(path + ".permissions." + permissionElements[i] + ".world").size()];
-                config.getStringList(path + ".permissions." + permissionElements[i] + ".world").toArray(worlds);
-            }
+	private static PermissionNode createPermissionNode (ConfigurationSection permissionSection)
+	{
+		String permission = permissionSection.getString("perm");
+		//List<String> servers = permissionSection.getStringList("servers");
+		Set<String> worlds = new HashSet<>(permissionSection.getStringList("worlds"));
 
-            String[] servers = new String[0];
+		return PermissionManager.createPermissionNode(permission, worlds, null);
+	}
 
-            if (config.getConfigurationSection(path + ".permissions." + permissionElements[i]).contains("server"))
-            {
-                servers = new String[config.getStringList(path + ".permissions." + permissionElements[i] + ".server").size()];
-                config.getStringList(path + ".permissions." + permissionElements[i] + ".server").toArray(servers);
-            }
+	private HashMap<String, String> setupMustHavePerms ()
+	{
+		HashMap<String, String> mustHavePerms = new HashMap<>();
 
-            permissions[i] = PermissionManager.createPermissionNode(permission, worlds, servers);
-        }
+		if (!config.contains("must-have-perms"))
+			return mustHavePerms;
 
-        return permissions;
-    }
+		ConfigurationSection mustHavePermsSection = config.getConfigurationSection("must-have-perms");
 
-    private HashMap<String, String> getMustHavePerms ()
-    {
-        HashMap<String, String> mustHavePerms = new HashMap<>();
+		for (String mustHavePerm : mustHavePermsSection.getKeys(false))
+			mustHavePerms.put(Utils.formatText(mustHavePerm), mustHavePermsSection.getString(mustHavePerm));
 
-        if (config.getConfigurationSection(path).contains("must-have-perms"))
-        {
-            for (String mustHavePerm : config.getConfigurationSection(path + ".must-have-perms").getKeys(false))
-            {
-                mustHavePerms.put(mustHavePerm, config.getString(path + ".must-have-perms." + mustHavePerm));
-            }
-        }
+		return mustHavePerms;
+	}
 
-        return mustHavePerms;
-    }
+	public ItemStack getItemStack ()
+	{
+		return itemStack;
+	}
 
-    private double getPrice ()
-    {
-        return config.getDouble(path + ".price");
-    }
+	public Set<PermissionNode> getPermissions ()
+	{
+		return permissions;
+	}
 
-    private int getSlot ()
-    {
-        return config.getInt(path + ".slot");
-    }
+	public Map<String, String> getMustHavePerms ()
+	{
+		return mustHavePerms;
+	}
+
+	public int getSlot ()
+	{
+		return slot;
+	}
+
+	public double getPrice ()
+	{
+		return price;
+	}
+
+	public ConfigurationSection getConfig ()
+	{
+		return config;
+	}
+
+	public Player getPlayer ()
+	{
+		return player;
+	}
 }

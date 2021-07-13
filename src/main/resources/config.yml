@@ -6,8 +6,8 @@ not-have-color: "&c&l"
 
 MainMenu:
   title: "Example title (main menu)"
-  size: 27
-  Items:
+  rows: 3
+  items:
     1:
       material: CHEST
       display-name: "Example display name (main menu)"

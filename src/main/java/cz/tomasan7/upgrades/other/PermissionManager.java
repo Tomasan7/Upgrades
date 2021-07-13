@@ -1,6 +1,5 @@
 package cz.tomasan7.upgrades.other;
 
-import cz.tomasan7.upgrades.Main;
 import cz.tomasan7.upgrades.Upgrades;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
@@ -11,6 +10,8 @@ import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.types.PermissionNode;
 import net.luckperms.api.query.QueryOptions;
 import org.bukkit.entity.Player;
+
+import java.util.Set;
 
 public class PermissionManager {
 
@@ -33,7 +34,7 @@ public class PermissionManager {
         luckPerms.getUserManager().saveUser(user);
     }
 
-    public static PermissionNode createPermissionNode (String permission, String[] worlds, String[] servers)
+    public static PermissionNode createPermissionNode (String permission, Set<String> worlds, String[] servers)
     {
         PermissionNode.Builder builder = PermissionNode.builder(permission);
 

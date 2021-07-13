@@ -16,6 +16,8 @@ public class Upgrades
 	private static Economy economy;
 	private static LuckPerms luckPerms;
 
+	private static MainMenu mainMenu;
+
 	/**
 	 * Setups everything, when the plugin enables.
 	 */
@@ -97,5 +99,10 @@ public class Upgrades
 	public static LuckPerms getLuckPerms ()
 	{
 		return luckPerms;
+	}
+
+	public static MainMenu getMainMenu ()
+	{
+		return mainMenu;
 	}
 }

@@ -1,49 +1,45 @@
 package cz.tomasan7.upgrades.menus;
 
-import cz.tomasan7.upgrades.Main;
+import cz.tomasan7.upgrades.Constants;
 import cz.tomasan7.upgrades.other.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-public class MainMenu {
+public class MainMenu implements InventoryHolder
+{
+	private final String title;
+	private final int rows;
+	private Set<MainMenuElement> elements;
 
-    public static ArrayList<MainMenuElement> elements;
-    public static ArrayList<SubMenu> subMenus;
+	private final Inventory inventory;
 
-    public static Inventory getInventory(Player player)
-    {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
-        String MenuTitle = Utils.formatText(config.getString("MainMenu.title"));
-        int MenuSize = config.getInt("MainMenu.size");
+	public MainMenu (ConfigurationSection config)
+	{
+		title = Utils.formatText(config.getString("title"));
+		rows = config.getInt("rows");
+		elements = new HashSet<>();
+		inventory = Bukkit.createInventory(this, rows * Constants.ROW_SIZE, title);
 
-        Inventory inventory = Bukkit.createInventory(player, MenuSize, MenuTitle);
+		ConfigurationSection itemsSection = config.getConfigurationSection("items");
 
-        for (MainMenuElement element : elements)
-        {
-            inventory.setItem(element.slot, element.item);
-        }
+		for (String itemKey : itemsSection.getKeys(false))
+		{
+			MainMenuElement element = new MainMenuElement(itemsSection.getConfigurationSection(itemKey));
+			elements.add(element);
+			inventory.setItem(element.getSlot(), element.getItemStack());
+		}
+	}
 
-        return inventory;
-    }
-
-    public static void load ()
-    {
-        FileConfiguration config = Main.getPlugin(Main.class).getConfig();
-        ArrayList<MainMenuElement> elements = new ArrayList<>();
-        subMenus = new ArrayList<>();
-
-        for (String key : config.getConfigurationSection("MainMenu.Items").getKeys(false))
-        {
-            String path = "MainMenu.Items." + key + ".";
-            MainMenuElement element = new MainMenuElement(config, path);
-            subMenus.add(new SubMenu(config.getString(path + "sub-menu")));
-
-            elements.add(element);
-        }
-        MainMenu.elements = elements;
-    }
+	@NotNull
+	@Override
+	public Inventory getInventory ()
+	{
+		return inventory;
+	}
 }
