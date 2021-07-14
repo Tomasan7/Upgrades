@@ -20,22 +20,20 @@ import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SubMenu implements InventoryHolder
+public class SubMenu implements Menu
 {
 	private final String name;
 	private final String title;
 	private final int rows;
-	private final Set<SubMenuElement> elements;
+	private final Set<MenuElement> elements;
 	private final Player player;
 
-	private final ConfigurationSection config;
 	private final Inventory inventory;
 
 	public SubMenu (String name, ConfigurationSection config, Player player)
 	{
 		this.name = name;
 		this.player = player;
-		this.config = config;
 		title = Utils.formatText(config.getString("title"));
 		rows = config.getInt("rows");
 		elements = new HashSet<>();
@@ -45,29 +43,41 @@ public class SubMenu implements InventoryHolder
 
 		for (String itemKey : itemsSection.getKeys(false))
 		{
-			SubMenuElement element = new SubMenuElement(itemsSection.getConfigurationSection(itemKey), player);
+			MenuElement element = createElement(itemsSection.getConfigurationSection(itemKey));
 			elements.add(element);
 			inventory.setItem(element.getSlot(), element.getItemStack());
 		}
 	}
 
-	/*public List<SubMenuElement> getElements (Player player)
+	private MenuElement createElement (ConfigurationSection config)
 	{
-		FileConfiguration config = getConfig();
-		ArrayList<SubMenuElement> elements = new ArrayList<>();
+		if (!config.isString(MenuElement.SPECIAL_KEY))
+			return new SubMenuElement(this, config, player);
 
-		for (String key : config.getConfigurationSection("Items").getKeys(false))
-		{
-			String path = "Items." + key;
-			SubMenuElement element = new SubMenuElement(config, path, player);
+		String typeString = config.getString(MenuElement.SPECIAL_KEY);
 
-			elements.add(element);
-		}
+		return switch (typeString)
+				{
+					case ReturnToMainMenuElement.SPECIAL_NAME -> new ReturnToMainMenuElement(this, config);
+					case BalanceElement.SPECIAL_NAME -> new BalanceElement(this, config, player);
+					case BlankElement.SPECIAL_NAME -> new BlankElement(this, config);
+					default -> null;
+				};
+	}
 
-		return elements;
-	}*/
+	@Override
+	public @NotNull String getTitle ()
+	{
+		return title;
+	}
 
-	public Set<SubMenuElement> getElements ()
+	@Override
+	public int getRows ()
+	{
+		return rows;
+	}
+
+	public Set<MenuElement> getElements ()
 	{
 		return new HashSet<>(elements);
 	}

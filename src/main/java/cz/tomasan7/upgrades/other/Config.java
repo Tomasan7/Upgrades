@@ -8,9 +8,9 @@ import java.util.Map;
 
 public class Config
 {
-    public static ContextSet getDefaultContexts ()
+    public static ContextSet getGlobalContexts ()
     {
-        return PermissionManager.contextsFromConfig(Main.getInstance().getConfig().getConfigurationSection("default-contexts").getValues(false));
+        return PermissionManager.contextsFromConfig(Main.getInstance().getConfig().getConfigurationSection("global-contexts").getValues(false));
     }
 
 	public static Boolean getEnchantOnHave ()

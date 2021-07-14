@@ -44,7 +44,7 @@ public class PermissionManager
 			builder.withContext(contexts);
 
 		if (addDefaultContexts)
-			builder.withContext(Config.getDefaultContexts());
+			builder.withContext(Config.getGlobalContexts());
 
 		return builder.build();
 	}

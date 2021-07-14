@@ -1,7 +1,11 @@
 package cz.tomasan7.upgrades.other;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.List;
 import java.util.Set;
 
 public class Utils {
@@ -47,5 +51,17 @@ public class Utils {
             array[i++] = string;
 
         return array;
+    }
+
+    public static ItemStack createItemStack (Material material, String displayName, List<String> lore, int amount)
+    {
+        ItemStack itemStack = new ItemStack(material, amount);
+
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        itemMeta.setDisplayName(displayName);
+        itemMeta.setLore(lore);
+        itemStack.setItemMeta(itemMeta);
+
+        return itemStack;
     }
 }

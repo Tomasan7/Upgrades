@@ -1,26 +1,24 @@
 package cz.tomasan7.upgrades.menus;
 
-import cz.tomasan7.upgrades.other.Config;
-import cz.tomasan7.upgrades.other.PermissionManager;
-import cz.tomasan7.upgrades.other.Utils;
-import net.luckperms.api.context.ContextSet;
-import net.luckperms.api.context.ContextSetFactory;
-import net.luckperms.api.context.ImmutableContextSet;
-import net.luckperms.api.context.MutableContextSet;
+import cz.tomasan7.upgrades.Upgrades;
+import cz.tomasan7.upgrades.other.*;
 import net.luckperms.api.node.types.PermissionNode;
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class SubMenuElement
+public class SubMenuElement implements MenuElement
 {
 	private final ItemStack itemStack;
 	private final Set<PermissionNode> permissions;
@@ -28,12 +26,14 @@ public class SubMenuElement
 	private final int slot;
 	private final double price;
 	private final ConfigurationSection config;
+	private final SubMenu owningMenu;
 
 	private final Player player;
 
-	public SubMenuElement (ConfigurationSection config, Player player)
+	public SubMenuElement (SubMenu owningMenu, ConfigurationSection config, Player player)
 	{
 		this.config = config;
+		this.owningMenu = owningMenu;
 		this.player = player;
 		permissions = new HashSet<>();
 
@@ -126,9 +126,61 @@ public class SubMenuElement
 		return mustHavePerms;
 	}
 
-	public ItemStack getItemStack ()
+	@Override
+	public void onClick (InventoryClickEvent event)
+	{
+		Economy economy = Upgrades.getEconomy();
+
+		Constants.CLICK_SOUND.play(player);
+
+		if (permissions.stream().allMatch(perm -> PermissionManager.checkPermission(player, perm, true)))
+		{
+			Messages.Message(player, Messages.getAlreadyHave());
+			player.closeInventory();
+			return;
+		}
+
+		/* If player misses at least one mustHavePermission, then interrupt. */
+		for (String key : mustHavePerms.keySet())
+		{
+			if (!PermissionManager.checkPermission(player, PermissionManager.createPermissionNode(mustHavePerms.get(key), Config.getGlobalContexts(), false), false))
+			{
+				Messages.Message(player, Messages.getDontHaveMustHavePerm() + Utils.formatText(key));
+				player.closeInventory();
+				return;
+			}
+		}
+
+		EconomyResponse response = economy.withdrawPlayer(player, price);
+
+		if (response.transactionSuccess())
+		{
+			permissions.forEach(perm -> PermissionManager.addPermission(player, perm));
+			Constants.BUY_SUCCESS_SOUND.play(player);
+			Messages.Message(player, Messages.getSuccessfulBuy());
+			player.openInventory(SubMenu.newSubMenu(owningMenu.getName(), player).getInventory());
+		}
+		else
+		{
+			if (response.errorMessage.equals("Loan was not permitted"))
+				Messages.Message(player, Messages.getNoMoney());
+			else
+				Messages.Message(player, response.errorMessage);
+			player.closeInventory();
+		}
+	}
+
+	@Override
+	public @NotNull ItemStack getItemStack ()
 	{
 		return itemStack;
+	}
+
+	@Override
+	@NotNull
+	public Menu getOwningMenu ()
+	{
+		return null;
 	}
 
 	public Set<PermissionNode> getPermissions ()
@@ -141,6 +193,7 @@ public class SubMenuElement
 		return mustHavePerms;
 	}
 
+	@Override
 	public int getSlot ()
 	{
 		return slot;

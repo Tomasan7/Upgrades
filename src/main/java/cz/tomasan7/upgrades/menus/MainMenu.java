@@ -5,13 +5,12 @@ import cz.tomasan7.upgrades.other.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class MainMenu implements InventoryHolder
+public class MainMenu implements Menu
 {
 	private final String title;
 	private final int rows;
@@ -30,13 +29,27 @@ public class MainMenu implements InventoryHolder
 
 		for (String itemKey : itemsSection.getKeys(false))
 		{
-			MainMenuElement element = new MainMenuElement(itemsSection.getConfigurationSection(itemKey));
+			MainMenuElement element = new MainMenuElement(this, itemsSection.getConfigurationSection(itemKey));
 			elements.add(element);
 			inventory.setItem(element.getSlot(), element.getItemStack());
 		}
 	}
 
-	public Set<MainMenuElement> getElements ()
+	@Override
+	@NotNull
+	public String getTitle ()
+	{
+		return title;
+	}
+
+	@Override
+	public int getRows ()
+	{
+		return 0;
+	}
+
+	@NotNull
+	public Set<MenuElement> getElements ()
 	{
 		return new HashSet<>(elements);
 	}
