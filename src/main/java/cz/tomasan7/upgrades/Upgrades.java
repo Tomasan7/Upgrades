@@ -3,9 +3,13 @@ package cz.tomasan7.upgrades;
 import cz.tomasan7.upgrades.commands.UpgradesCmd;
 import cz.tomasan7.upgrades.events.MenuHandler;
 import cz.tomasan7.upgrades.menus.MainMenu;
+import cz.tomasan7.upgrades.other.Config;
+import cz.tomasan7.upgrades.other.ConfigKeys;
+import cz.tomasan7.upgrades.other.Defaults;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Material;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
@@ -15,8 +19,6 @@ public class Upgrades
 
 	private static Economy economy;
 	private static LuckPerms luckPerms;
-
-	private static MainMenu mainMenu;
 
 	/**
 	 * Setups everything, when the plugin enables.
@@ -33,15 +35,14 @@ public class Upgrades
 
 		main.saveDefaultConfig();
 		main.getConfig().options().copyDefaults(true);
-
-		mainMenu = new MainMenu(main.getConfig().getConfigurationSection("MainMenu"));
+		Defaults.load(Config.getMenuItemDefaults());
 	}
 
 	public static void reload ()
 	{
 		main.saveDefaultConfig();
 		main.reloadConfig();
-		mainMenu = new MainMenu(main.getConfig().getConfigurationSection("MainMenu"));
+		Defaults.load(Config.getMenuItemDefaults());
 	}
 
 	/**
@@ -103,10 +104,5 @@ public class Upgrades
 	public static LuckPerms getLuckPerms ()
 	{
 		return luckPerms;
-	}
-
-	public static MainMenu getMainMenu ()
-	{
-		return mainMenu;
 	}
 }

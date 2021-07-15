@@ -2,6 +2,9 @@ package cz.tomasan7.upgrades.commands.subCommands;
 
 import cz.tomasan7.CommandManager.SubCommand;
 import cz.tomasan7.upgrades.Upgrades;
+import cz.tomasan7.upgrades.menus.MainMenu;
+import cz.tomasan7.upgrades.other.Config;
+import cz.tomasan7.upgrades.other.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -42,8 +45,8 @@ public class Open implements SubCommand
     @Override
     public void perform (CommandSender sender, String[] args)
     {
-        if (sender instanceof Player)
-            ((Player)sender).openInventory(Upgrades.getMainMenu().getInventory());
+        if (sender instanceof Player player)
+            new MainMenu(Config.getMainMenu(), player).open(player);
         else
             sender.sendMessage("§cOnly players can do that.");
     }

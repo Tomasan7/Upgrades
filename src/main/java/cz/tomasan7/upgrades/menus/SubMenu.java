@@ -1,22 +1,27 @@
 package cz.tomasan7.upgrades.menus;
 
+import cz.tomasan7.upgrades.menus.menuElements.*;
+import cz.tomasan7.upgrades.other.ConfigKeys;
 import cz.tomasan7.upgrades.other.Constants;
 import cz.tomasan7.upgrades.Main;
+import cz.tomasan7.upgrades.other.Defaults;
 import cz.tomasan7.upgrades.other.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,6 +30,7 @@ public class SubMenu implements Menu
 	private final String name;
 	private final String title;
 	private final int rows;
+	private final Material fill;
 	private final Set<MenuElement> elements;
 	private final Player player;
 
@@ -34,54 +40,43 @@ public class SubMenu implements Menu
 	{
 		this.name = name;
 		this.player = player;
-		title = Utils.formatText(config.getString("title"));
-		rows = config.getInt("rows");
+		title = Utils.formatText(config.getString(ConfigKeys.Menu.TITLE, Defaults.Menu.getTitle()), player);
+		rows = config.getInt(ConfigKeys.Menu.ROWS, Defaults.Menu.getRows());
+		fill = Material.matchMaterial(config.getString(ConfigKeys.Menu.FILL, Defaults.Menu.getFill().toString()));
 		elements = new HashSet<>();
 		inventory = Bukkit.createInventory(this, rows * Constants.ROW_SIZE, title);
 
-		ConfigurationSection itemsSection = config.getConfigurationSection("items");
+		if (fill != Material.AIR)
+		{
+			for (int slot = 0; slot < inventory.getSize(); slot++)
+				inventory.setItem(slot, new MenuItem(fill, " ", new ArrayList<>(), 1, slot).getItemStack());
+		}
+
+		ConfigurationSection itemsSection = config.getConfigurationSection(ConfigKeys.Menu.MENU_ITEMS);
 
 		for (String itemKey : itemsSection.getKeys(false))
 		{
-			MenuElement element = createElement(itemsSection.getConfigurationSection(itemKey));
+			MenuElement element = parseMenuElement(itemsSection.getConfigurationSection(itemKey));
 			elements.add(element);
-			inventory.setItem(element.getSlot(), element.getItemStack());
+			inventory.setItem(element.getMenuItem().getSlot(), element.getMenuItem().getItemStack());
 		}
 	}
 
-	private MenuElement createElement (ConfigurationSection config)
+	@Override
+	@NotNull
+	public MenuElement parseMenuElement (ConfigurationSection config)
 	{
-		if (!config.isString(MenuElement.SPECIAL_KEY))
-			return new SubMenuElement(this, config, player);
+		MenuElement.MenuElementType type = MenuElement.MenuElementType.getByConfigValue(config.getString(ConfigKeys.Menu.MenuElement.TYPE, Defaults.MenuElement.getType().toString()).toUpperCase());
 
-		String typeString = config.getString(MenuElement.SPECIAL_KEY);
-
-		return switch (typeString)
+		return switch (type)
 				{
-					case ReturnToMainMenuElement.SPECIAL_NAME -> new ReturnToMainMenuElement(this, config);
-					case BalanceElement.SPECIAL_NAME -> new BalanceElement(this, config, player);
-					case BlankElement.SPECIAL_NAME -> new BlankElement(this, config);
-					default -> null;
+					default -> new SubMenuElement(this, config, player);
+					case RETURN_TO_MAIN_MENU -> new ReturnToMainMenuElement(this, config, player);
+					case BLANK -> new BlankElement(this, config, player);
 				};
 	}
 
-	@Override
-	public @NotNull String getTitle ()
-	{
-		return title;
-	}
-
-	@Override
-	public int getRows ()
-	{
-		return rows;
-	}
-
-	public Set<MenuElement> getElements ()
-	{
-		return new HashSet<>(elements);
-	}
-
+	@NotNull
 	public static SubMenu newSubMenu (String name, Player player)
 	{
 		Plugin plugin = Main.getInstance();
@@ -111,9 +106,43 @@ public class SubMenu implements Menu
 		return new SubMenu(name, fileConfiguration, player);
 	}
 
+	@NotNull
 	public String getName ()
 	{
 		return name;
+	}
+
+	@Override
+	@NotNull
+	public String getTitle ()
+	{
+		return title;
+	}
+
+	@Override
+	public int getRows ()
+	{
+		return rows;
+	}
+
+	@Override
+	@Nullable
+	public Material getFill ()
+	{
+		return fill;
+	}
+
+	@Override
+	@NotNull
+	public Set<MenuElement> getElements ()
+	{
+		return new HashSet<>(elements);
+	}
+
+	@NotNull
+	public Player getPlayer ()
+	{
+		return player;
 	}
 
 	@NotNull

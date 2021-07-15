@@ -1,6 +1,9 @@
-package cz.tomasan7.upgrades.menus;
+package cz.tomasan7.upgrades.menus.menuElements;
 
 import cz.tomasan7.upgrades.Upgrades;
+import cz.tomasan7.upgrades.menus.Menu;
+import cz.tomasan7.upgrades.menus.SubMenu;
+import cz.tomasan7.upgrades.menus.menuElements.MenuElement;
 import cz.tomasan7.upgrades.other.*;
 import net.luckperms.api.node.types.PermissionNode;
 import net.milkbowl.vault.economy.Economy;
@@ -15,52 +18,51 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class SubMenuElement implements MenuElement
 {
-	private final ItemStack itemStack;
+	private final MenuElementType TYPE = MenuElementType.NORMAL;
+
+	private final SubMenu owningMenu;
+	private final MenuItem menuItem;
+	private final Player player;
+
 	private final Set<PermissionNode> permissions;
 	private final Map<String, String> mustHavePerms;
-	private final int slot;
 	private final double price;
-	private final ConfigurationSection config;
-	private final SubMenu owningMenu;
 
-	private final Player player;
+	private final ConfigurationSection config;
 
 	public SubMenuElement (SubMenu owningMenu, ConfigurationSection config, Player player)
 	{
-		this.config = config;
 		this.owningMenu = owningMenu;
+		this.config = config;
 		this.player = player;
+
 		permissions = new HashSet<>();
-
-		ConfigurationSection permsSection = config.getConfigurationSection("permissions");
-
+		ConfigurationSection permsSection = config.getConfigurationSection(ConfigKeys.SubMenu.SubMenuElement.PERMISSIONS);
 		for (String permKey : permsSection.getKeys(false))
 			permissions.add(createPermissionNode(permsSection.getConfigurationSection(permKey)));
 
-		price = config.getDouble("price");
 		mustHavePerms = setupMustHavePerms();
-		slot = config.getInt("slot");
-
-		itemStack = createItemStack();
+		price = config.getDouble(ConfigKeys.SubMenu.SubMenuElement.PRICE, Defaults.SubMenuElement.getPrice());
+		this.menuItem = parseMenuItem();
 	}
 
-	private ItemStack createItemStack ()
+	private MenuItem parseMenuItem ()
 	{
-		Material material = Material.matchMaterial(config.getString("material"));
-		int amount = config.getInt("amount");
-
-		ItemStack itemStack = new ItemStack(material, amount);
+		ItemStack itemStack = new MenuItem(config, player).getItemStack();
 		ItemMeta itemMeta = itemStack.getItemMeta();
-		String displayName = Utils.formatText(config.getString("display-name"));
+
+		itemMeta.setDisplayName(itemMeta.getDisplayName().replaceAll("%price%", String.valueOf(price)));
+		itemMeta.setLore(itemMeta.getLore().stream().map(l -> l.replaceAll("%price%", String.valueOf(price))).toList());
 
 		boolean hasAllPerms = true;
 
-		for (PermissionNode permissionNode : this.permissions)
+		for (PermissionNode permissionNode : permissions)
 		{
 			if (!PermissionManager.checkPermission(player, permissionNode, true))
 			{
@@ -75,30 +77,19 @@ public class SubMenuElement implements MenuElement
 				itemMeta.addEnchant(Enchantment.DURABILITY, 1, false);
 
 			if (Config.getColorOnHave())
-			{
-				displayName = ChatColor.stripColor(displayName);
-				displayName = Config.getHaveColor() + displayName;
-			}
+				itemMeta.setDisplayName(Config.getHaveColor() + ChatColor.stripColor(itemMeta.getDisplayName()));
 		}
 		else
 		{
 			if (Config.getColorOnHave())
-			{
-				displayName = ChatColor.stripColor(displayName);
-				displayName = Config.getNotHaveColor() + displayName;
-			}
+				itemMeta.setDisplayName(Config.getNotHaveColor() + ChatColor.stripColor(itemMeta.getDisplayName()));
 		}
 
 		itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-		itemMeta.setDisplayName(displayName);
-		List<String> lore = config.getStringList("lore").stream()
-				.map(s -> Utils.formatText(s, "%price%", price))
-				.toList();
-		itemMeta.setLore(lore);
 		itemStack.setItemMeta(itemMeta);
 
-		return itemStack;
+		return new MenuItem(itemStack, config.getInt(ConfigKeys.Menu.MenuElement.MenuItem.SLOT, Defaults.MenuItem.getSlot()));
 	}
 
 	private static PermissionNode createPermissionNode (ConfigurationSection permSection)
@@ -111,17 +102,20 @@ public class SubMenuElement implements MenuElement
 		return PermissionManager.createPermissionNode(permission, PermissionManager.contextsFromConfig(contexts), true);
 	}
 
-	private HashMap<String, String> setupMustHavePerms ()
+	private Map<String, String> setupMustHavePerms ()
 	{
-		HashMap<String, String> mustHavePerms = new HashMap<>();
+		Map<String, String> mustHavePerms = new HashMap<>();
 
-		if (!config.contains("must-have-perms"))
+		if (!config.contains(ConfigKeys.SubMenu.SubMenuElement.MUST_HAVE_PERMS))
 			return mustHavePerms;
 
-		ConfigurationSection mustHavePermsSection = config.getConfigurationSection("must-have-perms");
+		ConfigurationSection mustHavePermsSection = config.getConfigurationSection(ConfigKeys.SubMenu.SubMenuElement.MUST_HAVE_PERMS);
 
 		for (String mustHavePerm : mustHavePermsSection.getKeys(false))
 			mustHavePerms.put(Utils.formatText(mustHavePerm), mustHavePermsSection.getString(mustHavePerm));
+
+		if (mustHavePerms.isEmpty())
+			mustHavePerms = Defaults.SubMenuElement.getMustHavePerms();
 
 		return mustHavePerms;
 	}
@@ -130,6 +124,7 @@ public class SubMenuElement implements MenuElement
 	public void onClick (InventoryClickEvent event)
 	{
 		Economy economy = Upgrades.getEconomy();
+		Player player = (Player) event.getWhoClicked();
 
 		Constants.CLICK_SOUND.play(player);
 
@@ -171,46 +166,46 @@ public class SubMenuElement implements MenuElement
 	}
 
 	@Override
-	public @NotNull ItemStack getItemStack ()
+	@NotNull
+	public MenuElementType getType ()
 	{
-		return itemStack;
+		return TYPE;
 	}
 
 	@Override
 	@NotNull
 	public Menu getOwningMenu ()
 	{
-		return null;
-	}
-
-	public Set<PermissionNode> getPermissions ()
-	{
-		return permissions;
-	}
-
-	public Map<String, String> getMustHavePerms ()
-	{
-		return mustHavePerms;
+		return owningMenu;
 	}
 
 	@Override
-	public int getSlot ()
+	@NotNull
+	public MenuItem getMenuItem ()
 	{
-		return slot;
+		return menuItem;
+	}
+
+	@Nullable
+	public Player getPlayer ()
+	{
+		return player;
+	}
+
+	@NotNull
+	public Set<PermissionNode> getPermissions ()
+	{
+		return new HashSet<>(permissions);
+	}
+
+	@NotNull
+	public Map<String, String> getMustHavePerms ()
+	{
+		return new HashMap<>(mustHavePerms);
 	}
 
 	public double getPrice ()
 	{
 		return price;
-	}
-
-	public ConfigurationSection getConfig ()
-	{
-		return config;
-	}
-
-	public Player getPlayer ()
-	{
-		return player;
 	}
 }

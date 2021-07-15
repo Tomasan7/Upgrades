@@ -1,7 +1,9 @@
 package cz.tomasan7.upgrades.other;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -13,6 +15,11 @@ public class Utils {
     public static String formatText (String text)
     {
         return ChatColor.translateAlternateColorCodes('&', text);
+    }
+
+    public static String formatText (String text, Player player)
+    {
+        return ChatColor.translateAlternateColorCodes('&', player == null ? text : PlaceholderAPI.setPlaceholders(player, text));
     }
 
     public static String formatText (String text, String placeHolder, double value)

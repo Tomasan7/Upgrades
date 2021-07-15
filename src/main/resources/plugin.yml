@@ -3,6 +3,7 @@ version: ${project.version}
 main: cz.tomasan7.upgrades.Main
 api-version: 1.16
 depend: [LuckPerms, Vault]
+softdepend: [PlaceholderAPI]
 prefix: Upgrades
 authors: [Tomasan7]
 description: This plugin allows you to buy permissions via GUI.

@@ -1,6 +1,22 @@
 # These contexts will be applied to every buyable permission.
-defaul-contexts:
+global-contexts:
   server: Survival
+
+defaults:
+  menu:
+    title: "Upgrades"
+    rows: 3
+  menu-tem:
+    material: BLACK_STAINED_GLASS_PANE
+    display-name: ""
+    lore: []
+    amount: 1
+  menu-element:
+    type: normal
+  sub-menu-element:
+    price: 9999
+    must-have-perms:
+      "&cBuy": buy.upgrades.perm
 
 enchant-on-have: true
 color-on-have: true
@@ -8,7 +24,7 @@ color-on-have: true
 have-color: "&2&l"
 not-have-color: "&c&l"
 
-MainMenu:
+main-menu:
   title: "Example title (main menu)"
   rows: 3
   items:
