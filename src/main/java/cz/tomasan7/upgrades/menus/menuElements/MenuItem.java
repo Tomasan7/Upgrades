@@ -7,6 +7,7 @@ import cz.tomasan7.upgrades.other.Utils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Range;
@@ -71,6 +72,7 @@ public class MenuItem
 		ItemMeta itemMeta = itemStack.getItemMeta();
 		itemMeta.setDisplayName(displayName);
 		itemMeta.setLore(lore);
+		itemMeta.addItemFlags(ItemFlag.values());
 		itemStack.setItemMeta(itemMeta);
 		return itemStack;
 	}
