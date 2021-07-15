@@ -72,7 +72,13 @@ public class MenuItem
 		ItemMeta itemMeta = itemStack.getItemMeta();
 		itemMeta.setDisplayName(displayName);
 		itemMeta.setLore(lore);
-		itemMeta.addItemFlags(ItemFlag.values());
+		itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		itemMeta.addItemFlags(ItemFlag.HIDE_DESTROYS);
+		itemMeta.addItemFlags(ItemFlag.HIDE_DYE);
+		itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+		itemMeta.addItemFlags(ItemFlag.HIDE_PLACED_ON);
+		itemMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+		itemMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
 		itemStack.setItemMeta(itemMeta);
 		return itemStack;
 	}
