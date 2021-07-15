@@ -6,7 +6,7 @@
 
     <groupId>cz.Tomasan7</groupId>
     <artifactId>Upgrades</artifactId>
-    <version>1.1</version>
+    <version>2.0</version>
     <packaging>jar</packaging>
 
     <name>Upgrades</name>

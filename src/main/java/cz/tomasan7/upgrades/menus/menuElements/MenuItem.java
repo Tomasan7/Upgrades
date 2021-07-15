@@ -1,7 +1,6 @@
 package cz.tomasan7.upgrades.menus.menuElements;
 
 import cz.tomasan7.upgrades.other.ConfigKeys;
-import cz.tomasan7.upgrades.other.Constants;
 import cz.tomasan7.upgrades.other.Defaults;
 import cz.tomasan7.upgrades.other.Utils;
 import org.bukkit.Material;
@@ -10,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.Range;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +27,11 @@ public class MenuItem
 	{
 		this.material = material != null ? material : Defaults.MenuItem.getMaterial();
 		this.displayName = Utils.formatText(displayName != null ? displayName : Defaults.MenuItem.getDisplayName());
-		this.lore = lore != null ? lore.stream().map(l -> Utils.formatText(l, player)).toList() : Defaults.MenuItem.getLore().stream().map(l -> Utils.formatText(l, player)).toList();
+		this.lore = lore != null ? lore.stream()
+				.map(l -> Utils.formatText(l, player))
+				.toList() : Defaults.MenuItem.getLore().stream()
+				.map(l -> Utils.formatText(l, player))
+				.toList();
 		this.amount = amount;
 		this.slot = slot;
 		this.itemStack = createItemStack();
@@ -44,7 +46,9 @@ public class MenuItem
 	{
 		this.material = Material.matchMaterial(config.getString(ConfigKeys.Menu.MenuElement.MenuItem.MATERIAL, Defaults.MenuItem.getMaterial().toString()));
 		this.displayName = Utils.formatText(config.getString(ConfigKeys.Menu.MenuElement.MenuItem.DISPLAY_NAME, Defaults.MenuItem.getDisplayName()), player);
-		this.lore = ((List<String>) config.getList(ConfigKeys.Menu.MenuElement.MenuItem.LORE, Defaults.MenuItem.getLore())).stream().map(l -> Utils.formatText(l, player)).toList();
+		this.lore = ((List<String>) config.getList(ConfigKeys.Menu.MenuElement.MenuItem.LORE, Defaults.MenuItem.getLore())).stream()
+				.map(l -> Utils.formatText(l, player))
+				.toList();
 		this.amount = config.getInt(ConfigKeys.Menu.MenuElement.MenuItem.AMOUNT, Defaults.MenuItem.getAmount());
 		this.slot = config.getInt(ConfigKeys.Menu.MenuElement.MenuItem.SLOT, Defaults.MenuItem.getSlot());
 		this.itemStack = createItemStack();
