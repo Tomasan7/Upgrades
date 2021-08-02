@@ -45,7 +45,7 @@ public abstract class Menu implements InventoryHolder
 				inventory.setItem(slot, new MenuItem(fill, " ", new ArrayList<>(), 1, slot).getItemStack());
 		}
 
-		ConfigurationSection itemsSection = config.getConfigurationSection(ConfigKeys.Menu.MENU_ITEMS);
+		ConfigurationSection itemsSection = config.getConfigurationSection(ConfigKeys.Menu.MENU_ELEMENTS);
 
 		for (String itemKey : itemsSection.getKeys(false))
 		{

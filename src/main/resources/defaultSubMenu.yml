@@ -23,3 +23,11 @@ items:
       "gamemode": essentials.gamemode
     price: 10
     slot: 0
+  return:
+    type: return
+    material: BARRIER
+    display-name: '&c&lReturn to main menu'
+    lore:
+      - '&7Return to main menu'
+      - '&7by clicking this'
+    slot: 22

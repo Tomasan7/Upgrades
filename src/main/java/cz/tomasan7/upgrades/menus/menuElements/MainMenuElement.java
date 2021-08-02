@@ -36,7 +36,7 @@ public class MainMenuElement implements MenuElement
 		Player player = ((Player) event.getWhoClicked());
 
 		Constants.CLICK_SOUND.play(player);
-		player.openInventory(SubMenu.newSubMenu(subMenu, player).getInventory());
+		player.openInventory(owningMenu.newSubMenu(subMenu).getInventory());
 	}
 
 	@Override

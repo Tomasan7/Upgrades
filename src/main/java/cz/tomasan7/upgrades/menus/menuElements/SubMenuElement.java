@@ -153,7 +153,7 @@ public class SubMenuElement implements MenuElement
 			permissions.forEach(perm -> PermissionManager.addPermission(player, perm));
 			Constants.BUY_SUCCESS_SOUND.play(player);
 			Messages.Message(player, Messages.getSuccessfulBuy());
-			player.openInventory(SubMenu.newSubMenu(owningMenu.getName(), player).getInventory());
+			player.openInventory(owningMenu.getOwningMainMenu().newSubMenu(owningMenu.getName()).getInventory());
 		}
 		else
 		{

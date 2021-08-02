@@ -35,6 +35,7 @@ public class Upgrades
 
 		main.saveDefaultConfig();
 		main.getConfig().options().copyDefaults(true);
+		MainMenu.loadSubMenusConfigs();
 		Defaults.load(Config.getMenuItemDefaults());
 	}
 
@@ -42,6 +43,7 @@ public class Upgrades
 	{
 		main.saveDefaultConfig();
 		main.reloadConfig();
+		MainMenu.loadSubMenusConfigs();
 		Defaults.load(Config.getMenuItemDefaults());
 	}
 

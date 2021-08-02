@@ -33,7 +33,7 @@ public class ReturnToMainMenuElement implements MenuElement
 		Player player = ((Player) event.getWhoClicked());
 
 		Constants.CLICK_SOUND.play(player);
-		new MainMenu(Config.getMainMenu(), player).open(player);
+		owningMenu.getOwningMainMenu().open(player);
 	}
 
 	@Override

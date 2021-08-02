@@ -24,7 +24,7 @@ public class ConfigKeys
 		public static final String TITLE = "title";
 		public static final String ROWS = "rows";
 		public static final String FILL = "fill";
-		public static final String MENU_ITEMS = "items";
+		public static final String MENU_ELEMENTS = "items";
 
 		public static class MenuElement
 		{
