@@ -66,7 +66,7 @@ public abstract class Menu implements InventoryHolder
 	}
 
 	@NotNull
-	protected  abstract MenuElement parseMenuElement (ConfigurationSection config);
+	protected abstract MenuElement parseMenuElement (ConfigurationSection config);
 
 	@NotNull
 	public String getTitle ()
@@ -88,7 +88,7 @@ public abstract class Menu implements InventoryHolder
 	@NotNull
 	public Set<MenuElement> getElements ()
 	{
-		return elements;
+		return new HashSet<>(elements);
 	}
 
 	@NotNull
